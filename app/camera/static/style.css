@@ -1,0 +1,19 @@
+body {
+    margin: 0;
+    min-height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    background-color: #111;
+    color: white;
+}
+
+img {
+    width: 900px;
+    max-width: 95%;
+    border: 3px solid white;
+    border-radius: 10px;
+}
