@@ -1,30 +1,28 @@
-from flask import Flask, render_template, Response
-from camera_manager import generate_frames, get_camera
-import os
+import cv2
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-stream = Flask(
-    __name__,
-    template_folder=os.path.join(BASE_DIR, "templates"),
-    static_folder=os.path.join(BASE_DIR, "static")
-)
-
-camera = get_camera()
+from app.camera.camera_manager import camera_manager
+from app.tracking.detector import detect_red_target
+from app.state import tracking_state
 
 
-@stream.route('/')
-def index():
-    return render_template('index.html')
+def generate_frames():
+    camera_manager.start()
 
+    while True:
+        success, frame = camera_manager.read()
+        if not success:
+            break
 
-@stream.route('/video_feed')
-def video_feed():
-    return Response(
-        generate_frames(camera),
-        mimetype='multipart/x-mixed-replace; boundary=frame'
-    )
+        frame, tracking_info = detect_red_target(frame)
+        tracking_state.update(tracking_info)
 
+        ret, buffer = cv2.imencode('.jpg', frame)
+        if not ret:
+            continue
 
-if __name__ == '__main__':
-    stream.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)
+        yield (
+            b'--frame\r\n'
+            b'Content-Type: image/jpeg\r\n\r\n' +
+            buffer.tobytes() +
+            b'\r\n'
+        )
