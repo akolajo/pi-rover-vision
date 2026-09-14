@@ -1,15 +1,15 @@
 import cv2
 
-from app.camera.camera_manager import camera_manager
+from app.camera.camera_factory import camera
 from app.tracking.detector import detect_red_target
 from app.state import tracking_state
 
 
 def generate_frames():
-    camera_manager.start()
+    camera.start()
 
     while True:
-        success, frame = camera_manager.read()
+        success, frame = camera.read()
         if not success:
             break
 

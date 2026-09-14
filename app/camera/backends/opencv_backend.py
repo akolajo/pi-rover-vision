@@ -1,10 +1,12 @@
 import threading
 import cv2
 
+from app.camera.interfaces.camera_interface import CameraInterface
 
-class CameraManager:
-    """Owns the physical camera. Only responsibility: open it, grab frames,
-    release it. No detection/tracking logic lives here."""
+
+class OpenCVCamera(CameraInterface):
+    """Used for laptop development - any webcam OpenCV can see via V4L2/DirectShow.
+    Also works on the Pi if the camera is exposed as a V4L2 device."""
 
     def __init__(self, source=0):
         self._source = source
@@ -22,14 +24,9 @@ class CameraManager:
         if self._cap is None:
             raise RuntimeError("Camera not started - call start() first")
         with self._lock:
-            success, frame = self._cap.read()
-        return success, frame
+            return self._cap.read()
 
     def stop(self):
         if self._cap is not None:
             self._cap.release()
             self._cap = None
-
-
-# Single shared instance - open the camera exactly once, reuse it everywhere.
-camera_manager = CameraManager()
