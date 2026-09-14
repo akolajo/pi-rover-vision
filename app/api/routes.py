@@ -12,7 +12,7 @@ templates = Jinja2Templates(directory="app/camera/templates")
 
 @router.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request, "index.html")
 
 
 @router.get("/video_feed")
