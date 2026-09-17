@@ -2,21 +2,29 @@ import threading
 
 
 class TrackingState:
+    """Holds the most recent detection results so the API layer can read
+    them without touching the camera loop directly."""
+
     def __init__(self):
         self._lock = threading.Lock()
-        self._state = {
-            "target_detected": False,
-            "x": None, "y": None,
-            "offset_x": None, "offset_y": None,
-            "confidence": 0.0,
-            "timestamp": None,
-        }
+        self._state = {"detections": [], "timestamp": None}
 
-    def update(self, new_state: dict):
+    def update(self, detections, timestamp):
         with self._lock:
-            self._state = new_state
+            self._state = {
+                "detections": [
+                    {
+                        "label": d.label,
+                        "confidence": d.confidence,
+                        "x": d.x, "y": d.y, "w": d.w, "h": d.h,
+                        "center_x": d.center[0], "center_y": d.center[1],
+                    }
+                    for d in detections
+                ],
+                "timestamp": timestamp,
+            }
 
-    def get(self) -> dict:
+    def get(self):
         with self._lock:
             return dict(self._state)
 

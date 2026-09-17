@@ -1,7 +1,9 @@
+import time
 import cv2
 
 from app.camera.camera_factory import camera
-from app.tracking.detector import detect_red_target
+from app.tracking.detector_factory import detector
+from app.utils.image_utils import draw_detections
 from app.state import tracking_state
 
 
@@ -13,8 +15,9 @@ def generate_frames():
         if not success:
             break
 
-        frame, tracking_info = detect_red_target(frame)
-        tracking_state.update(tracking_info)
+        detections = detector.detect(frame)
+        tracking_state.update(detections, time.time())
+        draw_detections(frame, detections)
 
         ret, buffer = cv2.imencode('.jpg', frame)
         if not ret:
